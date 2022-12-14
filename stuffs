@@ -1,0 +1,47 @@
+// Import dependencies
+import express from 'express';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
+
+// Create a new Express app
+const app = express();
+
+// Use body-parser and cors middleware
+app.use(bodyParser.json());
+app.use(cors());
+
+// Connect to the MongoDB database
+mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true });
+
+// Create a new Mongoose schema for a post
+const PostSchema = new mongoose.Schema({
+  user: String,
+  body: String
+});
+
+// Create a Mongoose model for the post
+const Post = mongoose.model('Post', PostSchema);
+
+// Create a new post
+app.post('/posts', async (req, res) => {
+  const { user, body } = req.body;
+  const post = new Post({ user, body });
+  await post.save();
+  res.json({ success: true });
+});
+
+// Get a list of all posts
+app.get('/posts', async (req, res) => {
+  const posts = await Post.find();
+  res.json(posts);
+});
+
+// Start the server on port 3000
+app.listen(3000, () => {
+  console.log('Server listening on port 3000');
+});
